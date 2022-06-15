@@ -13,17 +13,20 @@ namespace CrmBL.Model
         public int Number { get; set; }
         public Seller Seller { get; set; }
         public Queue<Cart> Queue { get; set; }
-        public int MaxQueueLenght { get; set; } = 7;
+        public int MaxQueueLenght { get; set; }
         public int ExitCustomer { get; set; }
         public bool IsModel { get; set; } // Is the computer model included.
         public int Count => Queue.Count;
+
+        public event EventHandler<Check> CheckClosed;
 
         public CashDesk(int number,Seller seller)
         {
             Number = number;
             Seller = seller;
             Queue = new Queue<Cart>();
-            IsModel = true; 
+            IsModel = true;
+            MaxQueueLenght = 10;
         }
 
         public void Enqueue(Cart cart)
@@ -92,12 +95,20 @@ namespace CrmBL.Model
                     }
                 }
 
+                check.Price = sum;
+
                 if (!IsModel)
                 {
                     db.SaveChanges();
                 }
+                CheckClosed?.Invoke(this, check);
             }
             return sum;
+        }
+
+        public override string ToString()
+        {
+            return $"Cash desk {Number}";
         }
     }
 }
